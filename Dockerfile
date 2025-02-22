@@ -1,7 +1,5 @@
-# Use an official Node runtime as a parent image
-FROM node:18-alpine
-
-# Set a working directory
+# Builder Stage
+FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Copy package files and install dependencies
@@ -11,8 +9,24 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Expose the port the app runs on
+# Build the production Next.js app
+RUN npm run build
+
+# Runtime Stage
+FROM node:18-alpine
+WORKDIR /app
+
+# Copy necessary files from the builder stage
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+
+# Expose the port Next.js will run on
 EXPOSE 3000
 
-# Start the development server (change to 'npm run start' for production)
-CMD ["npm", "run", "dev"]
+# Set environment to production
+ENV NODE_ENV=production
+
+# Start production server
+CMD["npm", "run", "start"]

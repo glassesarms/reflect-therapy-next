@@ -29,4 +29,4 @@ EXPOSE 3000
 ENV NODE_ENV=production
 
 # Start production server
-CMD["npm", "run", "start"]
+CMD ["npm", "run", "start"]
